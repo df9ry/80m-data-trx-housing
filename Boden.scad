@@ -6,75 +6,94 @@ include <Maße.scad>
 $fa = 1;
 $fs = 0.4;
 
-stand_dim        = 6.0;
-stand_margin     = 1.5;
-loch_durchmesser = 3.5;
-tiefe_aussparung = 1.5;
-breite_total     = platine_breite + 2*platine_margin;
-tiefe_total      = platine_tiefe  + 2*platine_margin;
+// Radius der Löcher in den Stands:
+loch_radius = m3_lochdurchmesser / 2;
 
+//***********************************************************
+//** Stand sind die Abstandshalter vom Boden bis zur Platine.
+//***********************************************************
 module stand(h)
 {
     difference() {
-        cube([stand_dim, stand_dim, h]);
-        translate([stand_dim/2, stand_dim/2, 0])
-            cylinder(h+delta, r=loch_durchmesser/2);
+        cylinder(h = h, r = stand_radius);
+        translate([0, 0, -delta])
+            cylinder(h = h + 2*delta, r=loch_radius);
     }
 }
 
-module boden() {
-    cube([breite_total, tiefe_total, 2*gehaeuse_dicke]);
-    // Stand links vorne: 
-    translate([stand_margin, stand_margin, 0])
-        stand(h = 2*gehaeuse_dicke+platine_bodenfreiheit);          
-     // Stand rechts vorne:
-    translate([breite_total-stand_margin-stand_dim,
-               stand_margin, 0])
-        stand(h = 2*gehaeuse_dicke+platine_bodenfreiheit);          
-    // Stand links hinten:
-    translate([stand_margin,
-               tiefe_total-stand_margin-stand_dim, 0])
-        stand(h = 2*gehaeuse_dicke+platine_bodenfreiheit);          
-    // Stand rechts hinten:            
-    translate([breite_total-stand_margin-stand_dim,
-               tiefe_total-stand_margin-stand_dim, 0])
-        stand(h = 2*gehaeuse_dicke+platine_bodenfreiheit);
-}
-
+//***********************************************************
+//** Aussparung sind die Aussparungen im Boden in die von
+//** unten die Schrauben für die Befestigung des Deckels
+//** hinein kommen.
+//***********************************************************
 module aussparung(h) {
-    // Aussparung von unten:
-    cube([stand_dim, stand_dim, h]);
-    // Loch:
-    translate([stand_dim/2, stand_dim/2, 0])
-        cylinder(5, r=loch_durchmesser/2);
+    translate([0, 0, -delta]) {
+        cylinder(h = aussparung_hoehe + 2*delta,
+                 r = aussparung_radius);
+        cylinder(h = h + 2*delta,
+                 r = loch_radius);
+    }
 }
 
+//***********************************************************
+//** Gehäuseboden ohne Aussparungen.
+//***********************************************************
+module boden() {
+    // Boden Platte:
+    cube([boden_breite, boden_tiefe, boden_dicke]);
+    
+    // Stand links vorne: 
+    translate([stand_offset, 
+               stand_offset, 0])
+        stand(h = boden_dicke + platine_bodenfreiheit);
+    
+     // Stand rechts vorne:
+    translate([boden_breite - stand_offset, 
+               stand_offset, 0])
+        stand(h = boden_dicke + platine_bodenfreiheit);
+    
+    // Stand links hinten:
+    translate([stand_offset, 
+               boden_tiefe - stand_offset, 0])
+        stand(h = boden_dicke + platine_bodenfreiheit);
+    
+    // Stand rechts hinten:            
+    translate([boden_breite - stand_offset,
+               boden_tiefe - stand_offset, 0])
+        stand(h = boden_dicke + platine_bodenfreiheit);
+}
+
+//***********************************************************
+//** Aussparungen für den Gehäuseboden.
+//***********************************************************
 module aussparungen() {
     // Aussparung links vorne:
-    translate([stand_margin, stand_margin, -delta])
-        aussparung(h = tiefe_aussparung+delta);    
+    translate([stand_offset,
+               stand_offset,
+               -delta])
+        aussparung(h = boden_dicke + 2*delta);    
      // Aussparung rechts vorne:
-    translate([breite_total-stand_margin-stand_dim,
-               stand_margin, -delta])
-        aussparung(h = tiefe_aussparung+delta);          
+    translate([boden_breite - stand_offset,
+               stand_offset,
+               -delta])
+        aussparung(h = boden_dicke + 2*delta);          
     // Aussparung links hinten:
-    translate([stand_margin,
-               tiefe_total-stand_margin-stand_dim, -delta])
-        aussparung(h = tiefe_aussparung+delta);          
+    translate([stand_offset,
+               boden_tiefe - stand_offset,
+               -delta])
+        aussparung(h = boden_dicke + 2*delta);          
     // Aussparung rechts hinten:            
-    translate([breite_total-stand_margin-stand_dim,
-               tiefe_total-stand_margin-stand_dim, -delta])
-        aussparung(h = tiefe_aussparung+delta);
+    translate([boden_breite - stand_offset,
+               boden_tiefe - stand_offset,
+               -delta])
+        aussparung(h = boden_dicke + 2*delta);
 }
 
-
-// Gehäuseboden:
-
+//***********************************************************
+//** Fertiger Gehäuseboden.
+//***********************************************************
 difference() {
     boden();
     aussparungen();
 }
 
-/*
-  
-*/
